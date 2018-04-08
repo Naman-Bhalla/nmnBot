@@ -1,19 +1,44 @@
 apply plugin: 'com.android.application'
 
+afterEvaluate { project ->
+    def propsFile = rootProject.file('keystore.properties')
+    def configName = 'release'
+
+    if (propsFile.exists() && android.signingConfigs.hasProperty(configName)) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        android.signingConfigs[configName].storeFile = file(props['storeFile'])
+        android.signingConfigs[configName].storePassword = props['storePassword']
+        android.signingConfigs[configName].keyPassword = props['keyPassword']
+    }
+}
+
 android {
+    signingConfigs {
+        config {
+
+        }
+    }
     compileSdkVersion 27
     defaultConfig {
         applicationId "in.namanbhalla.nmnbot"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+            buildConfigField 'String', "api_key", DIALOGFLOW_LMS_BOT_KEY
+        }
+
+        debug {
+            buildConfigField 'String', "api_key", DIALOGFLOW_LMS_BOT_KEY
         }
     }
 }
@@ -28,4 +53,9 @@ dependencies {
     implementation 'ai.api:sdk:2.0.7@aar'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'commons-io:commons-io:20030203.000550'
+    implementation 'ai.api:libai:1.6.12'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
 }
+
+
